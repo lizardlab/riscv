@@ -22,12 +22,11 @@ _start:
     li a7, 63
     ecall
 
-    la t1, width
-    lw t0, 0(t1)
+    lw t0, height
     muli t0, t0, 10
-    lb t0, 0(a1)
+    lb t1, 0(a1)
     addi t0, -48, t0
-    sw t0, 0(t1)
+    sw t0, height
     bltz t0, firstSpace
     b readWidth
 
@@ -45,8 +44,7 @@ _start:
     li a7, 63
     ecall
 
-    la t1, height
-    lw t0, 0(t1)
+    lw t0, height
     muli t0, t0, 10
     lb t0, 0(a1)
     addi t0, -48, t0
@@ -55,8 +53,6 @@ _start:
     b readHeight
 
     secondSpace:
-
-
 
     li a0, 3            # making some assumptions about our file desc
     li a7, 57           # why is close so far from open
