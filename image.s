@@ -1,7 +1,29 @@
+.section .data
+input_file: .asciz "image.pgm"
+height: .byte 0
+width: .byte 0
+pixelVal: .word 0
+charred: .byte 0
+
 .global _start
 
 .section .text
 _start:
+    # this will make a 512x512 blue repeating gradient on the canvas
+    li a0, 0
+    li a1, 0
+    li a2, 8
+    li t0, 512
+outLoop:
+    addi a1, a1, 1
+inLoop:
+    addi a2, a2, 16
+    addi a0, a0, 1
+    call write_pixel
+    blt a0, t0, inLoop
+    li a0, 0
+    blt a1, t0, outLoop
+
     la a0, input_file   # addr for file
     li a1, 0            # flags (readonly)
     li a2, 0            # mode
@@ -22,13 +44,13 @@ _start:
     li a7, 63
     ecall
 
-    lb t0, height
+    la t3, width
+    lb t0, 0(t3)
     li t2, 10
     mul t0, t0, t2
     lb t1, 0(a1)
     addi t0, t0, -48
-    la t3, height
-    sw t0, 0(t3)
+    sb t0, 0(t3)
     bltz t0, firstSpace
     j readWidth
 
@@ -46,12 +68,13 @@ _start:
     li a7, 63
     ecall
 
-    lb t0, height
+    la t1, height
+    lb t0, 0(t1)
     li t2, 10
     mul t0, t0, t2
     lb t0, 0(a1)
     addi t0, t0, -10
-    sw t0, 0(t1)
+    sb t0, 0(t1)
     bltz t0, secondSpace
     j readHeight
 
@@ -61,12 +84,6 @@ _start:
     li a2, 4            # first 3 bytes
     li a4, 0            # make sure its from the start
     li a7, 62
-    ecall
-
-    # set our canvas
-    lb a0, width        # canvas width
-    lb a1, height       # canvas height    
-    li a7, 2201         # setCanvasSize syscall
     ecall
 
     li t0, 0            # counter
@@ -92,7 +109,6 @@ _start:
     addi a3, a3, 255    # add 0xFF for the alpha
     addi t0, t0, 1      # increment counter
     li a7, 2200         # setPixel call
-    ecall
     bnez t3, readPixel
 
     li a0, 3            # making some assumptions about our file desc
@@ -104,14 +120,8 @@ _start:
     ecall # do it
 
 write_pixel:
-    li a0, 100          # x coord = 100
-    li a1, 200          # y coord = 200
-    li a2, 0x0000FFFF   # blue pixel
+    # x, y are provided as a0, a1 func args
+    #li a2, 0x0000FFFF   # blue pixel
     li a7, 2200         # syscall setPixel
     ecall
-
-input_file: .asciz "image.pgm"
-height: .byte 0
-width: .byte 0
-pixelVal: .word 0
-charred: .byte 0
+    ret
